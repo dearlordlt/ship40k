@@ -3,111 +3,1960 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warhammer 40k Ship Designer</title>
-    
-    <!-- Tailwind CSS via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Custom Tailwind Configuration -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'imperial-red': '#A91F1F',
-                        'gothic-gold': '#BFA979',
-                        'void-black': '#0F0F0F',
-                    },
-                    fontFamily: {
-                        'gothic': ['Cinzel', 'serif'],
-                    },
-                }
+    <title>W40K Rogue Trader Ship Simulator</title>
+    <style>
+        :root {
+            --dark-bg: #1a1a1a;
+            --main-bg: #2a2a2a;
+            --accent: #8b0000;
+            --text: #e0e0e0;
+            --highlight: #ffcc00;
+            --button: #3d3d3d;
+            --button-hover: #4d4d4d;
+            --border: #444;
+        }
+        
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Helvetica', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        header {
+            background-color: var(--accent);
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            margin: 0;
+            font-family: 'Times New Roman', serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        h2 {
+            margin-top: 0.5rem;
+            border-bottom: 1px solid var(--accent);
+            padding-bottom: 0.5rem;
+        }
+        
+        main {
+            flex: 1;
+            padding: 1rem;
+            background-color: var(--main-bg);
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .tab {
+            padding: 0.5rem 1rem;
+            background-color: var(--button);
+            cursor: pointer;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            margin-right: 2px;
+        }
+        
+        .tab:hover {
+            background-color: var(--button-hover);
+        }
+        
+        .tab.active {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 0 5px 5px 5px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        .ship-selection {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .ship-card {
+            background-color: rgba(30, 30, 30, 0.9);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 1rem;
+            width: calc(50% - 0.5rem);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .ship-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border-color: var(--highlight);
+        }
+        
+        .ship-card.selected {
+            border: 2px solid var(--highlight);
+            background-color: rgba(40, 40, 40, 0.9);
+        }
+        
+        .ship-card h3 {
+            margin-top: 0;
+            color: var(--highlight);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        .ship-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .ship-stat {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .ship-stat-label {
+            font-weight: bold;
+            color: #ccc;
+        }
+
+        .stat-block {
+            background-color: rgba(20, 20, 20, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #b20000;
+        }
+        
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.5rem;
+            background-color: #333;
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 3px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--highlight);
+        }
+        
+        .crew-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: rgba(20, 20, 20, 0.7);
+            padding: 0.5rem;
+            border-radius: 5px;
+        }
+        
+        .crew-member {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background-color: rgba(40, 40, 40, 0.8);
+            border-radius: 3px;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .crew-member h4 {
+            margin: 0 0 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .crew-stats {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .crew-stat {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+        }
+
+        .battle-log {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .log-entry {
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        
+        .log-entry.system {
+            color: #aaa;
+        }
+        
+        .log-entry.action {
+            color: var(--highlight);
+        }
+        
+        .log-entry.damage {
+            color: #ff6666;
+        }
+        
+        .log-entry.critical {
+            color: #ff3333;
+            font-weight: bold;
+        }
+        
+        .log-entry.success {
+            color: #66ff66;
+        }
+        
+        .log-entry.humor {
+            color: #ff99cc;
+            font-style: italic;
+        }
+        
+        .ship-display {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .ship-info {
+            flex: 1;
+            padding: 1rem;
+            background-color: rgba(20, 20, 20, 0.7);
+            border-radius: 5px;
+        }
+        
+        .battle-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hull-display {
+            height: 20px;
+            background-color: #333;
+            border-radius: 3px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .hull-bar {
+            height: 100%;
+            background-color: var(--accent);
+            transition: width 0.3s;
+        }
+        
+        .component-list {
+            margin-top: 1rem;
+        }
+        
+        .component {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background-color: rgba(40, 40, 40, 0.8);
+            border-radius: 3px;
+        }
+        
+        .component.damaged {
+            background-color: rgba(80, 30, 30, 0.8);
+        }
+        
+        .component.destroyed {
+            background-color: rgba(50, 10, 10, 0.8);
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s;
+        }
+
+        .popup.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            background-color: var(--main-bg);
+            padding: 2rem;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .ship-card {
+                width: 100%;
+            }
+
+            .two-col {
+                grid-template-columns: 1fr;
             }
         }
-    </script>
-
-    <!-- Google Fonts - Cinzel for Gothic Style -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/custom.css">
+    </style>
 </head>
-<body class="bg-void-black text-gray-200 min-h-screen">
-    <header class="bg-black p-4 border-b-2 border-imperial-red">
-        <h1 class="text-4xl font-gothic text-imperial-red text-center">
-            Warhammer 40k Ship Designer
-        </h1>
-        <p class="text-gothic-gold text-center mt-2 font-gothic">
-            For the Emperor's Glory
-        </p>
+<body>
+    <header>
+        <h1>Warhammer 40K: Ship Battle Simulator</h1>
     </header>
-
-    <main class="container mx-auto p-4">
-        <!-- Mode Selection Tabs -->
-        <div class="flex border-b border-imperial-red mb-6">
-            <button id="designModeTab" 
-                    class="px-6 py-3 font-gothic text-imperial-red bg-black hover:bg-gray-900 border-2 border-imperial-red rounded-t-lg active">
-                Design Mode
-            </button>
-            <button id="simulationModeTab" 
-                    class="px-6 py-3 font-gothic text-gray-400 hover:text-imperial-red hover:bg-gray-900 border-2 border-transparent ml-2 rounded-t-lg">
-                Simulation Mode
-            </button>
-        </div>
-
-        <!-- Design Mode Panel -->
-        <div id="designMode" class="mode-panel">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Ship Class Selection -->
-                <div class="bg-gray-900 p-6 rounded-lg border border-imperial-red">
-                    <h2 class="text-2xl font-gothic text-imperial-red mb-4">Ship Class Selection</h2>
-                    <div id="shipClassSelector" class="space-y-4">
-                        <!-- Ship classes will be populated here -->
-                    </div>
+    
+    <main>
+        <div class="container">
+            <div class="tabs">
+                <div class="tab active" data-tab="ship-selection">Ship Selection</div>
+                <div class="tab" data-tab="ship-creator">Ship Creator</div>
+                <div class="tab" data-tab="crew-manager">Crew Manager</div>
+                <div class="tab" data-tab="battle-simulator">Battle Simulator</div>
+            </div>
+            
+            <div class="tab-content active" id="ship-selection">
+                <h2>Select Your Vessel</h2>
+                <p>Choose a ship to command, Captain. The Emperor protects... mostly.</p>
+                
+                <div class="ship-selection">
+                    <!-- Ship cards will be generated here -->
                 </div>
 
-                <!-- Resource Tracker -->
-                <div class="bg-gray-900 p-6 rounded-lg border border-imperial-red">
-                    <h2 class="text-2xl font-gothic text-imperial-red mb-4">Resources</h2>
-                    <div id="resourceTracker" class="space-y-4">
-                        <!-- Resource tracking info will be displayed here -->
-                    </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <button id="select-ship-btn" disabled>Select Ship</button>
                 </div>
-
-                <!-- Component Selection -->
-                <div class="bg-gray-900 p-6 rounded-lg border border-imperial-red md:col-span-2">
-                    <h2 class="text-2xl font-gothic text-imperial-red mb-4">Components</h2>
-                    <div id="componentSelector" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Component categories and options will be displayed here -->
-                    </div>
-                </div>
-
-                <!-- Finalize Design Section -->
-                <div class="bg-gray-900 p-6 rounded-lg border border-imperial-red md:col-span-2 mt-6">
-                    <h2 class="text-2xl font-gothic text-imperial-red mb-4">Finalize Design</h2>
-                    <div class="space-y-4">
-                        <div>
-                            <label for="shipName" class="block text-gothic-gold mb-2">Ship Name</label>
-                            <input type="text" id="shipName" 
-                                   class="gothic-input w-full"
-                                   placeholder="Enter ship name or leave blank for auto-generation">
+            </div>
+            
+            <div class="tab-content" id="ship-creator">
+                <h2>Custom Ship Construction</h2>
+                <p>Design your own vessel. The Adeptus Mechanicus charges extra for cup holders.</p>
+                
+                <div class="two-col">
+                    <div>
+                        <div class="form-group">
+                            <label for="ship-name">Ship Name</label>
+                            <input type="text" id="ship-name" placeholder="e.g. Righteous Fury">
                         </div>
-                        <button id="finalizeDesignBtn"
-                                class="w-full py-3 px-6 bg-imperial-red hover:bg-red-700 font-gothic text-white rounded-lg text-lg transition-colors">
-                            Finalize Design and Begin Simulation
-                        </button>
+                        
+                        <div class="form-group">
+                            <label for="ship-class">Ship Class</label>
+                            <select id="ship-class">
+                                <option value="">-- Select Class --</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Raider">Raider</option>
+                                <option value="Frigate">Frigate</option>
+                                <option value="Light Cruiser">Light Cruiser</option>
+                                <option value="Cruiser">Cruiser</option>
+                                <option value="Grand Cruiser">Grand Cruiser</option>
+                                <option value="Battlecruiser">Battlecruiser</option>
+                                <option value="Battleship">Battleship</option>
+                            </select>
+                        </div>
+                        
+                        <div class="stat-block">
+                            <h3>Hull Characteristics</h3>
+                            <div class="form-group">
+                                <label for="ship-hull">Hull Integrity</label>
+                                <input type="number" id="ship-hull" min="20" max="100" value="40">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ship-armor">Armor</label>
+                                <input type="number" id="ship-armor" min="10" max="22" value="16">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ship-speed">Speed</label>
+                                <input type="number" id="ship-speed" min="1" max="10" value="5">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ship-maneuverability">Maneuverability</label>
+                                <input type="number" id="ship-maneuverability" min="10" max="50" value="25">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="stat-block">
+                            <h3>Crew & Systems</h3>
+                            <div class="form-group">
+                                <label for="ship-crew">Crew Rating</label>
+                                <select id="ship-crew">
+                                    <option value="20">20 - Pressed/Conscripted (Terrible)</option>
+                                    <option value="25">25 - Incompetent</option>
+                                    <option value="30" selected>30 - Average</option>
+                                    <option value="35">35 - Trained</option>
+                                    <option value="40">40 - Veteran</option>
+                                    <option value="45">45 - Elite</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ship-morale">Morale</label>
+                                <input type="number" id="ship-morale" min="20" max="100" value="80">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="ship-detection">Detection</label>
+                                <input type="number" id="ship-detection" min="10" max="50" value="30">
+                            </div>
+                        </div>
+                        
+                        <div class="stat-block">
+                            <h3>Weapons</h3>
+                            <div class="form-group">
+                                <label for="weapon-prow">Prow Weapon</label>
+                                <select id="weapon-prow">
+                                    <option value="">-- None --</option>
+                                    <option value="Lance Battery">Lance Battery</option>
+                                    <option value="Mega Laser">Mega Laser</option>
+                                    <option value="Bombardment Cannon">Bombardment Cannon</option>
+                                    <option value="Torpedo Tubes">Torpedo Tubes</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="weapon-dorsal">Dorsal Weapon</label>
+                                <select id="weapon-dorsal">
+                                    <option value="">-- None --</option>
+                                    <option value="Weapons Battery">Weapons Battery</option>
+                                    <option value="Lance Battery">Lance Battery</option>
+                                    <option value="Macro Cannon">Macro Cannon</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="weapon-port">Port Weapon</label>
+                                <select id="weapon-port">
+                                    <option value="">-- None --</option>
+                                    <option value="Weapons Battery">Weapons Battery</option>
+                                    <option value="Lance Battery">Lance Battery</option>
+                                    <option value="Macro Cannon">Macro Cannon</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="weapon-starboard">Starboard Weapon</label>
+                                <select id="weapon-starboard">
+                                    <option value="">-- None --</option>
+                                    <option value="Weapons Battery">Weapons Battery</option>
+                                    <option value="Lance Battery">Lance Battery</option>
+                                    <option value="Macro Cannon">Macro Cannon</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button id="create-ship-btn">Create Ship</button>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="crew-manager">
+                <h2>Crew Management</h2>
+                <p>Manage your ragtag collection of misfits who are one wrong look away from an airlock "accident".</p>
+                
+                <div class="two-col">
+                    <div>
+                        <div class="stat-block">
+                            <h3>Ship Crew Overview</h3>
+                            <div id="crew-overview">
+                                <p>No ship selected. Either select a pre-made ship or create your own.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-block">
+                            <h3>Key Personnel</h3>
+                            <div class="crew-list" id="key-crew-list">
+                                <!-- Key crew members will be listed here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="stat-block">
+                            <h3>Add New Officer</h3>
+                            <div class="form-group">
+                                <label for="crew-name">Name</label>
+                                <input type="text" id="crew-name" placeholder="e.g. Captain Horatio Blackthorne">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="crew-role">Role</label>
+                                <select id="crew-role">
+                                    <option value="">-- Select Role --</option>
+                                    <option value="Captain">Captain</option>
+                                    <option value="Navigator">Navigator</option>
+                                    <option value="Helmsman">Helmsman</option>
+                                    <option value="Master Gunner">Master Gunner</option>
+                                    <option value="Chief Engineer">Chief Engineer</option>
+                                    <option value="Commissar">Commissar</option>
+                                    <option value="Astropath">Astropath</option>
+                                    <option value="Arch-militant">Arch-militant</option>
+                                    <option value="Explorator">Explorator</option>
+                                    <option value="Seneschal">Seneschal</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="crew-skill">Skill Level</label>
+                                <select id="crew-skill">
+                                    <option value="20">Novice (20)</option>
+                                    <option value="30" selected>Trained (30)</option>
+                                    <option value="40">Experienced (40)</option>
+                                    <option value="50">Veteran (50)</option>
+                                    <option value="60">Master (60)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="crew-quirk">Personality Quirk</label>
+                                <select id="crew-quirk">
+                                    <option value="">-- Random Quirk --</option>
+                                    <option value="Paranoid">Paranoid</option>
+                                    <option value="Zealous">Zealous</option>
+                                    <option value="Drunkard">Drunkard</option>
+                                    <option value="Narcissistic">Narcissistic</option>
+                                    <option value="Pyromaniac">Pyromaniac</option>
+                                    <option value="Superstitious">Superstitious</option>
+                                    <option value="Insubordinate">Insubordinate</option>
+                                    <option value="Cowardly">Cowardly</option>
+                                    <option value="Reckless">Reckless</option>
+                                    <option value="Optimistic">Optimistic</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <button id="add-crew-btn">Add Crew Member</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Simulation Mode Panel (Hidden by default) -->
-        <div id="simulationModePanel" class="mode-panel hidden">
-            <!-- Simulation content will be added here -->
+            
+            <div class="tab-content" id="battle-simulator">
+                <h2>Battle Simulation</h2>
+                <p>Engage the enemy! Try not to explode. The Administratum charges for replacement ships.</p>
+                
+                <div class="ship-display">
+                    <div class="ship-info">
+                        <h3>Your Ship: <span id="player-ship-name">None Selected</span></h3>
+                        <div>
+                            <div class="ship-stat">
+                                <span class="ship-stat-label">Hull Integrity:</span>
+                                <span id="player-ship-hull-value">0/0</span>
+                            </div>
+                            <div class="hull-display">
+                                <div class="hull-bar" id="player-hull-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="ship-stats" id="player-ship-stats">
+                            <!-- Ship stats will be displayed here -->
+                        </div>
+                        
+                        <div class="component-list" id="player-ship-components">
+                            <!-- Ship components will be listed here -->
+                        </div>
+                    </div>
+                    
+                    <div class="ship-info">
+                        <h3>Enemy Ship: <span id="enemy-ship-name">None</span></h3>
+                        <div>
+                            <div class="ship-stat">
+                                <span class="ship-stat-label">Hull Integrity:</span>
+                                <span id="enemy-ship-hull-value">0/0</span>
+                            </div>
+                            <div class="hull-display">
+                                <div class="hull-bar" id="enemy-hull-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="ship-stats" id="enemy-ship-stats">
+                            <!-- Enemy ship stats will be displayed here -->
+                        </div>
+                        
+                        <div class="component-list" id="enemy-ship-components">
+                            <!-- Enemy ship components will be listed here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="battle-controls">
+                    <button id="select-enemy-btn">Select Enemy</button>
+                    <button id="start-battle-btn" disabled>Start Battle</button>
+                    <button id="next-turn-btn" disabled>Next Turn</button>
+                    <button id="auto-battle-btn" disabled>Auto-Battle</button>
+                </div>
+                
+                <div class="battle-log" id="battle-log">
+                    <div class="log-entry system">Battle log initialized. Praise the Omnissiah!</div>
+                    <div class="log-entry humor">Servitor #4872 is standing by with a mop for the inevitable blood cleanup.</div>
+                </div>
+            </div>
         </div>
     </main>
+    
+    <div class="notification" id="notification"></div>
+    
+    <div class="popup" id="enemy-select-popup">
+        <div class="popup-content">
+            <h2>Select Enemy Ship</h2>
+            <div class="ship-selection" id="enemy-ship-selection">
+                <!-- Enemy ships will be listed here -->
+            </div>
+            <button id="confirm-enemy-btn" disabled>Confirm Selection</button>
+        </div>
+        <button class="close-btn" id="close-enemy-popup">×</button>
+    </div>
 
-    <!-- Scripts -->
-    <script type="module" src="js/app.js"></script>
+    <script>
+        // Game Data
+        const gameData = {
+            player: {
+                ship: null,
+                crew: []
+            },
+            enemy: {
+                ship: null,
+                crew: []
+            },
+            battle: {
+                turn: 0,
+                phase: 'inactive',
+                log: []
+            },
+            predefinedShips: [
+                {
+                    id: 1,
+                    name: "Dauntless Light Cruiser",
+                    class: "Light Cruiser",
+                    hull: {
+                        integrity: 60,
+                        current: 60,
+                        armor: 18
+                    },
+                    speed: 7,
+                    maneuverability: 35,
+                    crew: {
+                        rating: 30,
+                        morale: 80,
+                        population: 35000
+                    },
+                    detection: 30,
+                    weapons: {
+                        prow: "Lance Battery",
+                        dorsal: "Weapons Battery",
+                        port: "Weapons Battery",
+                        starboard: "Weapons Battery"
+                    },
+                    components: [
+                        { name: "Bridge", status: "operational" },
+                        { name: "Engines", status: "operational" },
+                        { name: "Life Support", status: "operational" },
+                        { name: "Void Shields", status: "operational" },
+                        { name: "Weapon Systems", status: "operational" },
+                        { name: "Sensors", status: "operational" }
+                    ],
+                    description: "A versatile ship with balanced characteristics. Popular among Rogue Traders for its combination of firepower and speed."
+                },
+                {
+                    id: 2,
+                    name: "Lunar Class Cruiser",
+                    class: "Cruiser",
+                    hull: {
+                        integrity: 70,
+                        current: 70,
+                        armor: 20
+                    },
+                    speed: 5,
+                    maneuverability: 25,
+                    crew: {
+                        rating: 35,
+                        morale: 85,
+                        population: 95000
+                    },
+                    detection: 25,
+                    weapons: {
+                        prow: "Torpedo Tubes",
+                        dorsal: "Weapons Battery",
+                        port: "Weapons Battery",
+                        starboard: "Weapons Battery"
+                    },
+                    components: [
+                        { name: "Bridge", status: "operational" },
+                        { name: "Engines", status: "operational" },
+                        { name: "Life Support", status: "operational" },
+                        { name: "Void Shields", status: "operational" },
+                        { name: "Weapon Systems", status: "operational" },
+                        { name: "Sensors", status: "operational" }
+                    ],
+                    description: "A reliable mainstay of Imperial Navy battlegroups. Its torpedo tubes pack a punch that enemy vessels learn to fear."
+                },
+                {
+                    id: 3,
+                    name: "Sword Class Frigate",
+                    class: "Frigate",
+                    hull: {
+                        integrity: 35,
+                        current: 35,
+                        armor: 15
+                    },
+                    speed: 9,
+                    maneuverability: 45,
+                    crew: {
+                        rating: 30,
+                        morale: 75,
+                        population: 20000
+                    },
+                    detection: 40,
+                    weapons: {
+                        prow: "",
+                        dorsal: "Weapons Battery",
+                        port: "",
+                        starboard: ""
+                    },
+                    components: [
+                        { name: "Bridge", status: "operational" },
+                        { name: "Engines", status: "operational" },
+                        { name: "Life Support", status: "operational" },
+                        { name: "Void Shields", status: "operational" },
+                        { name: "Weapon Systems", status: "operational" },
+                        { name: "Sensors", status: "operational" }
+                    ],
+                    description: "Fast and agile escort vessel. What it lacks in armor and firepower it makes up for in maneuverability."
+                },
+                {
+                    id: 4,
+                    name: "Retribution Class Battleship",
+                    class: "Battleship",
+                    hull: {
+                        integrity: 100,
+                        current: 100,
+                        armor: 22
+                    },
+                    speed: 3,
+                    maneuverability: 15,
+                    crew: {
+                        rating: 40,
+                        morale: 90,
+                        population: 150000
+                    },
+                    detection: 20,
+                    weapons: {
+                        prow: "Lance Battery",
+                        dorsal: "Macro Cannon",
+                        port: "Weapons Battery",
+                        starboard: "Weapons Battery"
+                    },
+                    components: [
+                        { name: "Bridge", status: "operational" },
+                        { name: "Engines", status: "operational" },
+                        { name: "Life Support", status: "operational" },
+                        { name: "Void Shields", status: "operational" },
+                        { name: "Weapon Systems", status: "operational" },
+                        { name: "Sensors", status: "operational" }
+                    ],
+                    description: "The Emperor's wrath made manifest. This behemoth carries enough firepower to level a small continent."
+                },
+                {
+                    id: 5,
+                    name: "Cobra Class Destroyer",
+                    class: "Raider",
+                    hull: {
+                        integrity: 30,
+                        current: 30,
+                        armor: 14
+                    },
+                    speed: 10,
+                    maneuverability: 50,
+                    crew: {
+                        rating: 25,
+                        morale: 70,
+                        population: 15000
+                    },
+                    detection: 35,
+                    weapons: {
+                        prow: "Torpedo Tubes",
+                        dorsal: "",
+                        port: "",
+                        starboard: ""
+                    },
+                    components: [
+                        { name: "Bridge", status: "operational" },
+                        { name: "Engines", status: "operational" },
+                        { name: "Life Support", status: "operational" },
+                        { name: "Void Shields", status: "operational" },
+                        { name: "Weapon Systems", status: "operational" },
+                        { name: "Sensors", status: "operational" }
+                    ],
+                    description: "Built for speed and surprise attacks. Its torpedo tubes can deliver a devastating first strike."
+                },
+                {
+                    id: 6,
+                    name: "Gothic Class Cruiser",
+                    class: "Cruiser",
+                    hull: {
+                        integrity: 65,
+                        current: 65,
+                        armor: 19
+                    },
+                    speed: 6,
+                    maneuverability: 30,
+                    crew: {
+                        rating: 35,
+                        morale: 80,
+                        population: 90000
+                    },
+                    detection: 30,
+                    weapons: {
+                        prow: "",
+                        dorsal: "Lance Battery",
+                        port: "Lance Battery",
+                        starboard: "Lance Battery"
+                    },
+                    components: [
+                        { name: "Bridge", status: "operational" },
+                        { name: "Engines", status: "operational" },
+                        { name: "Life Support", status: "operational" },
+                        { name: "Void Shields", status: "operational" },
+                        { name: "Weapon Systems", status: "operational" },
+                        { name: "Sensors", status: "operational" }
+                    ],
+                    description: "Specializes in lance batteries that can penetrate even the strongest armor. A nightmare for heavily armored targets."
+                }
+            ],
+            // Predefined crew members for each ship
+            crewTemplates: {
+                defaultCrew: [
+                    {
+                        name: "Captain Augustus Remington",
+                        role: "Captain",
+                        skill: 45,
+                        quirk: "Zealous",
+                        health: 100
+                    },
+                    {
+                        name: "Navigator Marius Void-Eye",
+                        role: "Navigator",
+                        skill: 40,
+                        quirk: "Superstitious",
+                        health: 100
+                    },
+                    {
+                        name: "Master Helmsman Darius Tiller",
+                        role: "Helmsman",
+                        skill: 35,
+                        quirk: "Reckless",
+                        health: 100
+                    },
+                    {
+                        name: "Weapons Master Tarkus Boom",
+                        role: "Master Gunner",
+                        skill: 40,
+                        quirk: "Pyromaniac",
+                        health: 100
+                    },
+                    {
+                        name: "Tech-Priest Dominus Gammax",
+                        role: "Chief Engineer",
+                        skill: 40,
+                        quirk: "Paranoid",
+                        health: 100
+                    },
+                    {
+                        name: "Commissar Vladimir Steelheart",
+                        role: "Commissar",
+                        skill: 35,
+                        quirk: "Zealous",
+                        health: 100
+                    }
+                ],
+                enemyCrew: [
+                    {
+                        name: "Captain Drakken Bloodfist",
+                        role: "Captain",
+                        skill: 45,
+                        quirk: "Reckless",
+                        health: 100
+                    },
+                    {
+                        name: "Navigator Sybil Darkeye",
+                        role: "Navigator",
+                        skill: 40,
+                        quirk: "Paranoid",
+                        health: 100
+                    },
+                    {
+                        name: "Helmsman Grix 'Lucky' Voidrunner",
+                        role: "Helmsman",
+                        skill: 35,
+                        quirk: "Superstitious",
+                        health: 100
+                    },
+                    {
+                        name: "Gunner Sergeant Thorne",
+                        role: "Master Gunner",
+                        skill: 40,
+                        quirk: "Zealous",
+                        health: 100
+                    },
+                    {
+                        name: "Tech-Priest Logis Kron",
+                        role: "Chief Engineer",
+                        skill: 40,
+                        quirk: "Narcissistic",
+                        health: 100
+                    }
+                ]
+            },
+            // Funny quotes for the battle log
+            humorQuotes: [
+                "The ship's Tech-Priest is patting a console and whispering sweet nothings to the machine spirit.",
+                "The ship's resident Ogryn just tried to fix the targeting array with a hammer. Surprisingly, it worked.",
+                "A nervous ensign reports that the Gellar field is flickering. Turns out someone just plugged in a toaster.",
+                "Warning: Several crew members have been caught trying to worship the coffee machine as a manifestation of the Emperor.",
+                "A servitor has been repurposed to dispense combat stimulants. The Commissar calls it 'motivation in a cup'.",
+                "The Captain's hat has been declared a holy relic by some of the more zealous crew members.",
+                "Ship's astropath reports receiving messages from beyond. Probably warp entities, but could just be the Imperial Navy's terrible hold music.",
+                "Navigator reports that the warp looks extra spooky today. Technical term, apparently.",
+                "Ship's Commissar shot someone for poor morale. Morale has improved significantly.",
+                "Hull breach in deck 47. Maintenance crews fixing it with prayer, duct tape, and the occasional ritual sacrifice.",
+                "Ship's cook has been executed for heresy. His crime? Referring to the Emperor's Feast Day meal as 'just another Thursday'.",
+                "Ship's cat has caught another Warp entity. It left it as a 'gift' on the Navigator's pillow.",
+                "A psychic shockwave has passed through the ship. Or maybe that was just the beans they served in the mess hall.",
+                "Warning: The machine spirit of the targeting cogitator is getting sassy again. It's starting to add insults to the targeting solutions.",
+                "Good news: We've located the source of the strange noise in the engine room. Bad news: It's speaking in tongues and glowing purple.",
+                "Ship's medicae reports that the bleeding walls are 'probably just condensation' and everyone should 'stop being so dramatic about it'.",
+                "Administratum memo: Please stop referring to the firing of the main guns as 'making the Emperor proud of his big boys'.",
+                "The ship's choir servitors are stuck on a loop of 'Row, Row, Row Your Boat'. The Tech-Priest says it's either heresy or a faulty circuit board.",
+                "Crew efficiency up 15% after someone painted 'The Emperor Is Watching You Slack Off' on the bulkhead.",
+                "Navigator reports successful warp jump. Also reports seeing the color 'blurple' and tasting the concept of bureaucracy."
+            ],
+            // Critical hit tables based on Rogue Trader rules
+            criticalHits: {
+                hull: [
+                    "Minor hull breach! Crew rushing to seal affected areas.",
+                    "Hull breach on multiple decks! Crew casualties mounting as compartments decompress.",
+                    "Catastrophic hull failure! Massive decompression across multiple decks.",
+                    "Structural integrity compromised! The ship is beginning to break apart!"
+                ],
+                propulsion: [
+                    "Engine fluctuations! Speed reduced temporarily.",
+                    "Engine coolant leak! Reduced speed until repaired.",
+                    "Major engine damage! Engines operating at minimal capacity.",
+                    "Catastrophic engine failure! The ship is dead in the void!"
+                ],
+                weapons: [
+                    "Power fluctuations in weapon systems! Reduced accuracy on next salvo.",
+                    "Weapons capacitors damaged! One weapon system offline.",
+                    "Ammunition explosion! Multiple weapon systems disabled.",
+                    "Catastrophic weapons failure! All weapon systems offline!"
+                ],
+                bridge: [
+                    "Bridge systems damaged! Command and control impaired.",
+                    "Major damage to bridge! Several bridge crew casualties.",
+                    "Bridge severely damaged! Captain injured and multiple crew killed.",
+                    "Bridge destroyed! Leadership decapitated and ship in disarray!"
+                ],
+                voidShields: [
+                    "Void shield fluctuations! Shield effectiveness reduced.",
+                    "Void shield generator damaged! Shields operating at reduced capacity.",
+                    "Major damage to shield systems! Void shields offline.",
+                    "Void shield generators destroyed! The ship is completely unprotected!"
+                ]
+            }
+        };
+
+        // Utility Functions
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function getRandomElement(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        function showNotification(message, duration = 3000) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
+        }
+
+        function deepClone(obj) {
+            return JSON.parse(JSON.stringify(obj));
+        }
+
+        // Tab Navigation
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Ship Selection
+        function populateShipCards() {
+            const shipSelection = document.querySelector('.ship-selection');
+            shipSelection.innerHTML = '';
+            
+            gameData.predefinedShips.forEach(ship => {
+                const shipCard = document.createElement('div');
+                shipCard.className = 'ship-card';
+                shipCard.dataset.shipId = ship.id;
+                
+                shipCard.innerHTML = `
+                    <h3>${ship.name}</h3>
+                    <p>${ship.class} Class</p>
+                    <div class="ship-stats">
+                        <div class="ship-stat">
+                            <span class="ship-stat-label">Hull:</span>
+                            <span>${ship.hull.integrity}</span>
+                        </div>
+                        <div class="ship-stat">
+                            <span class="ship-stat-label">Armor:</span>
+                            <span>${ship.hull.armor}</span>
+                        </div>
+                        <div class="ship-stat">
+                            <span class="ship-stat-label">Speed:</span>
+                            <span>${ship.speed}</span>
+                        </div>
+                        <div class="ship-stat">
+                            <span class="ship-stat-label">Maneuverability:</span>
+                            <span>${ship.maneuverability}</span>
+                        </div>
+                    </div>
+                    <p>${ship.description}</p>
+                `;
+                
+                shipCard.addEventListener('click', () => {
+                    document.querySelectorAll('.ship-card').forEach(card => {
+                        card.classList.remove('selected');
+                    });
+                    shipCard.classList.add('selected');
+                    document.getElementById('select-ship-btn').disabled = false;
+                });
+                
+                shipSelection.appendChild(shipCard);
+            });
+        }
+
+        // Initialize ship selection
+        populateShipCards();
+
+        // Ship Selection Button
+        document.getElementById('select-ship-btn').addEventListener('click', () => {
+            const selectedShipCard = document.querySelector('.ship-card.selected');
+            if (selectedShipCard) {
+                const shipId = parseInt(selectedShipCard.dataset.shipId);
+                const selectedShip = gameData.predefinedShips.find(ship => ship.id === shipId);
+                
+                if (selectedShip) {
+                    gameData.player.ship = deepClone(selectedShip);
+                    gameData.player.crew = deepClone(gameData.crewTemplates.defaultCrew);
+                    
+                    showNotification(`You have selected the ${selectedShip.name}`);
+                    
+                    // Update crew manager tab
+                    updateCrewDisplay();
+                    
+                    // Update battle simulator tab
+                    updateBattleDisplay();
+                    
+                    // Switch to crew manager tab
+                    document.querySelector('.tab[data-tab="crew-manager"]').click();
+                }
+            }
+        });
+
+        // Ship Creator
+        document.getElementById('create-ship-btn').addEventListener('click', () => {
+            const shipName = document.getElementById('ship-name').value.trim();
+            const shipClass = document.getElementById('ship-class').value;
+            
+            if (!shipName || !shipClass) {
+                showNotification('Please provide a ship name and class');
+                return;
+            }
+            
+            const newShip = {
+                id: gameData.predefinedShips.length + 1,
+                name: shipName,
+                class: shipClass,
+                hull: {
+                    integrity: parseInt(document.getElementById('ship-hull').value),
+                    current: parseInt(document.getElementById('ship-hull').value),
+                    armor: parseInt(document.getElementById('ship-armor').value)
+                },
+                speed: parseInt(document.getElementById('ship-speed').value),
+                maneuverability: parseInt(document.getElementById('ship-maneuverability').value),
+                crew: {
+                    rating: parseInt(document.getElementById('ship-crew').value),
+                    morale: parseInt(document.getElementById('ship-morale').value),
+                    population: getRandomInt(15000, 120000)
+                },
+                detection: parseInt(document.getElementById('ship-detection').value),
+                weapons: {
+                    prow: document.getElementById('weapon-prow').value,
+                    dorsal: document.getElementById('weapon-dorsal').value,
+                    port: document.getElementById('weapon-port').value,
+                    starboard: document.getElementById('weapon-starboard').value
+                },
+                components: [
+                    { name: "Bridge", status: "operational" },
+                    { name: "Engines", status: "operational" },
+                    { name: "Life Support", status: "operational" },
+                    { name: "Void Shields", status: "operational" },
+                    { name: "Weapon Systems", status: "operational" },
+                    { name: "Sensors", status: "operational" }
+                ],
+                description: `A custom vessel constructed according to the whims of its Rogue Trader.`
+            };
+            
+            gameData.predefinedShips.push(newShip);
+            gameData.player.ship = deepClone(newShip);
+            gameData.player.crew = deepClone(gameData.crewTemplates.defaultCrew);
+            
+            // Update ship name to match created ship
+            gameData.player.crew[0].name = `Captain ${shipName.split(' ')[0]}`;
+            
+            showNotification(`Ship "${shipName}" created successfully!`);
+            
+            // Repopulate ship selection
+            populateShipCards();
+            
+            // Update crew display
+            updateCrewDisplay();
+            
+            // Update battle display
+            updateBattleDisplay();
+            
+            // Switch to crew manager tab
+            document.querySelector('.tab[data-tab="crew-manager"]').click();
+        });
+
+        // Crew Manager
+        function updateCrewDisplay() {
+            const crewOverview = document.getElementById('crew-overview');
+            const keyCrewList = document.getElementById('key-crew-list');
+            
+            if (gameData.player.ship) {
+                crewOverview.innerHTML = `
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Ship:</span>
+                        <span>${gameData.player.ship.name}</span>
+                    </div>
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Crew Rating:</span>
+                        <span>${gameData.player.ship.crew.rating}</span>
+                    </div>
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Crew Morale:</span>
+                        <span>${gameData.player.ship.crew.morale}%</span>
+                    </div>
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Population:</span>
+                        <span>${gameData.player.ship.crew.population.toLocaleString()} souls</span>
+                    </div>
+                `;
+                
+                keyCrewList.innerHTML = '';
+                gameData.player.crew.forEach((crewMember, index) => {
+                    const crewElement = document.createElement('div');
+                    crewElement.className = 'crew-member';
+                    crewElement.innerHTML = `
+                        <h4>
+                            ${crewMember.name}
+                            <span>${crewMember.role}</span>
+                        </h4>
+                        <div class="crew-stats">
+                            <span class="crew-stat">Skill: ${crewMember.skill}</span>
+                            <span class="crew-stat">Quirk: ${crewMember.quirk}</span>
+                            <span class="crew-stat">Health: ${crewMember.health}%</span>
+                        </div>
+                    `;
+                    keyCrewList.appendChild(crewElement);
+                });
+            } else {
+                crewOverview.innerHTML = `<p>No ship selected. Either select a pre-made ship or create your own.</p>`;
+                keyCrewList.innerHTML = '';
+            }
+        }
+
+        // Add Crew Member Button
+        document.getElementById('add-crew-btn').addEventListener('click', () => {
+            if (!gameData.player.ship) {
+                showNotification('Please select or create a ship first');
+                return;
+            }
+            
+            const crewName = document.getElementById('crew-name').value.trim();
+            const crewRole = document.getElementById('crew-role').value;
+            
+            if (!crewName || !crewRole) {
+                showNotification('Please provide a name and role for the crew member');
+                return;
+            }
+            
+            // Check if role already exists
+            const existingCrewIndex = gameData.player.crew.findIndex(crew => crew.role === crewRole);
+            
+            const newCrewMember = {
+                name: crewName,
+                role: crewRole,
+                skill: parseInt(document.getElementById('crew-skill').value),
+                quirk: document.getElementById('crew-quirk').value || getRandomElement([
+                    "Paranoid", "Zealous", "Drunkard", "Narcissistic", "Pyromaniac", 
+                    "Superstitious", "Insubordinate", "Cowardly", "Reckless", "Optimistic"
+                ]),
+                health: 100
+            };
+            
+            if (existingCrewIndex !== -1) {
+                // Replace existing crew member
+                gameData.player.crew[existingCrewIndex] = newCrewMember;
+                showNotification(`${newCrewMember.name} has replaced the previous ${crewRole}`);
+            } else {
+                // Add new crew member
+                gameData.player.crew.push(newCrewMember);
+                showNotification(`${newCrewMember.name} has joined your crew`);
+            }
+            
+            // Clear form
+            document.getElementById('crew-name').value = '';
+            document.getElementById('crew-role').selectedIndex = 0;
+            document.getElementById('crew-quirk').selectedIndex = 0;
+            
+            // Update crew display
+            updateCrewDisplay();
+        });
+
+        // Battle Simulator
+        function updateBattleDisplay() {
+            const playerShipName = document.getElementById('player-ship-name');
+            const playerShipStats = document.getElementById('player-ship-stats');
+            const playerShipComponents = document.getElementById('player-ship-components');
+            const playerHullBar = document.getElementById('player-hull-bar');
+            const playerHullValue = document.getElementById('player-ship-hull-value');
+            
+            const enemyShipName = document.getElementById('enemy-ship-name');
+            const enemyShipStats = document.getElementById('enemy-ship-stats');
+            const enemyShipComponents = document.getElementById('enemy-ship-components');
+            const enemyHullBar = document.getElementById('enemy-hull-bar');
+            const enemyHullValue = document.getElementById('enemy-ship-hull-value');
+            
+            // Update player ship
+            if (gameData.player.ship) {
+                playerShipName.textContent = gameData.player.ship.name;
+                
+                playerShipStats.innerHTML = `
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Class:</span>
+                        <span>${gameData.player.ship.class}</span>
+                    </div>
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Armor:</span>
+                        <span>${gameData.player.ship.hull.armor}</span>
+                    </div>
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Speed:</span>
+                        <span>${gameData.player.ship.speed}</span>
+                    </div>
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Maneuverability:</span>
+                        <span>${gameData.player.ship.maneuverability}</span>
+                    </div>
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Crew Rating:</span>
+                        <span>${gameData.player.ship.crew.rating}</span>
+                    </div>
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Morale:</span>
+                        <span>${gameData.player.ship.crew.morale}%</span>
+                    </div>
+                `;
+                
+                playerShipComponents.innerHTML = '';
+                gameData.player.ship.components.forEach(component => {
+                    const componentEl = document.createElement('div');
+                    componentEl.className = `component ${component.status !== 'operational' ? component.status : ''}`;
+                    componentEl.innerHTML = `<span>${component.name}: ${component.status}</span>`;
+                    playerShipComponents.appendChild(componentEl);
+                });
+                
+                const hullPercentage = (gameData.player.ship.hull.current / gameData.player.ship.hull.integrity) * 100;
+                playerHullBar.style.width = `${hullPercentage}%`;
+                playerHullValue.textContent = `${gameData.player.ship.hull.current}/${gameData.player.ship.hull.integrity}`;
+                
+                document.getElementById('select-enemy-btn').disabled = false;
+            } else {
+                playerShipName.textContent = 'None Selected';
+                playerShipStats.innerHTML = '';
+                playerShipComponents.innerHTML = '';
+                playerHullBar.style.width = '0%';
+                playerHullValue.textContent = '0/0';
+                
+                document.getElementById('select-enemy-btn').disabled = true;
+            }
+            
+            // Update enemy ship
+            if (gameData.enemy.ship) {
+                enemyShipName.textContent = gameData.enemy.ship.name;
+                
+                enemyShipStats.innerHTML = `
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Class:</span>
+                        <span>${gameData.enemy.ship.class}</span>
+                    </div>
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Armor:</span>
+                        <span>${gameData.enemy.ship.hull.armor}</span>
+                    </div>
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Speed:</span>
+                        <span>${gameData.enemy.ship.speed}</span>
+                    </div>
+                    <div class="ship-stat">
+                        <span class="ship-stat-label">Maneuverability:</span>
+                        <span>${gameData.enemy.ship.maneuverability}</span>
+                    </div>
+                `;
+                
+                enemyShipComponents.innerHTML = '';
+                gameData.enemy.ship.components.forEach(component => {
+                    const componentEl = document.createElement('div');
+                    componentEl.className = `component ${component.status !== 'operational' ? component.status : ''}`;
+                    componentEl.innerHTML = `<span>${component.name}: ${component.status}</span>`;
+                    enemyShipComponents.appendChild(componentEl);
+                });
+                
+                const hullPercentage = (gameData.enemy.ship.hull.current / gameData.enemy.ship.hull.integrity) * 100;
+                enemyHullBar.style.width = `${hullPercentage}%`;
+                enemyHullValue.textContent = `${gameData.enemy.ship.hull.current}/${gameData.enemy.ship.hull.integrity}`;
+                
+                document.getElementById('start-battle-btn').disabled = false;
+            } else {
+                enemyShipName.textContent = 'None';
+                enemyShipStats.innerHTML = '';
+                enemyShipComponents.innerHTML = '';
+                enemyHullBar.style.width = '0%';
+                enemyHullValue.textContent = '0/0';
+                
+                document.getElementById('start-battle-btn').disabled = true;
+            }
+        }
+
+        // Select Enemy Button
+        document.getElementById('select-enemy-btn').addEventListener('click', () => {
+            if (!gameData.player.ship) {
+                showNotification('Please select or create a ship first');
+                return;
+            }
+            
+            // Show enemy selection popup
+            const enemySelectPopup = document.getElementById('enemy-select-popup');
+            enemySelectPopup.classList.add('show');
+            
+            // Populate enemy ship selection
+            const enemyShipSelection = document.getElementById('enemy-ship-selection');
+            enemyShipSelection.innerHTML = '';
+            
+            gameData.predefinedShips.forEach(ship => {
+                // Don't show player's own ship
+                if (gameData.player.ship && ship.id === gameData.player.ship.id) {
+                    return;
+                }
+                
+                const shipCard = document.createElement('div');
+                shipCard.className = 'ship-card';
+                shipCard.dataset.shipId = ship.id;
+                
+                shipCard.innerHTML = `
+                    <h3>${ship.name}</h3>
+                    <p>${ship.class} Class</p>
+                    <div class="ship-stats">
+                        <div class="ship-stat">
+                            <span class="ship-stat-label">Hull:</span>
+                            <span>${ship.hull.integrity}</span>
+                        </div>
+                        <div class="ship-stat">
+                            <span class="ship-stat-label">Armor:</span>
+                            <span>${ship.hull.armor}</span>
+                        </div>
+                        <div class="ship-stat">
+                            <span class="ship-stat-label">Speed:</span>
+                            <span>${ship.speed}</span>
+                        </div>
+                        <div class="ship-stat">
+                            <span class="ship-stat-label">Maneuverability:</span>
+                            <span>${ship.maneuverability}</span>
+                        </div>
+                    </div>
+                    <p>${ship.description}</p>
+                `;
+                
+                shipCard.addEventListener('click', () => {
+                    document.querySelectorAll('#enemy-ship-selection .ship-card').forEach(card => {
+                        card.classList.remove('selected');
+                    });
+                    shipCard.classList.add('selected');
+                    document.getElementById('confirm-enemy-btn').disabled = false;
+                });
+                
+                enemyShipSelection.appendChild(shipCard);
+            });
+        });
+        
+        // Close Enemy Popup Button
+        document.getElementById('close-enemy-popup').addEventListener('click', () => {
+            document.getElementById('enemy-select-popup').classList.remove('show');
+        });
+        
+        // Confirm Enemy Selection Button
+        document.getElementById('confirm-enemy-btn').addEventListener('click', () => {
+            const selectedEnemyCard = document.querySelector('#enemy-ship-selection .ship-card.selected');
+            if (selectedEnemyCard) {
+                const shipId = parseInt(selectedEnemyCard.dataset.shipId);
+                const selectedShip = gameData.predefinedShips.find(ship => ship.id === shipId);
+                
+                if (selectedShip) {
+                    gameData.enemy.ship = deepClone(selectedShip);
+                    gameData.enemy.crew = deepClone(gameData.crewTemplates.enemyCrew);
+                    
+                    showNotification(`Enemy ship ${selectedShip.name} selected`);
+                    
+                    // Close popup
+                    document.getElementById('enemy-select-popup').classList.remove('show');
+                    
+                    // Update battle display
+                    updateBattleDisplay();
+                }
+            }
+        });
+
+        // Battle System
+        function addLogEntry(message, type = 'system') {
+            const battleLog = document.getElementById('battle-log');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = message;
+            battleLog.appendChild(logEntry);
+            battleLog.scrollTop = battleLog.scrollHeight;
+            
+            // Add to game data log
+            gameData.battle.log.push({
+                message,
+                type,
+                turn: gameData.battle.turn
+            });
+        }
+        
+        function calculateHitChance(attacker, defender, weaponType) {
+            // Base hit chance based on attacker's crew rating and weapon type
+            let baseHitChance = attacker.crew.rating;
+            
+            // Adjust based on ship maneuverability
+            const maneuverDiff = attacker.maneuverability - defender.maneuverability;
+            baseHitChance += maneuverDiff / 2;
+            
+            // Adjust based on weapon type
+            if (weaponType === "Lance Battery") {
+                baseHitChance += 5; // Lances are more accurate
+            } else if (weaponType === "Torpedo Tubes") {
+                baseHitChance -= 10; // Torpedoes are harder to hit with
+            }
+            
+            // Adjust based on component status
+            const sensorComponent = attacker.components.find(c => c.name === "Sensors");
+            if (sensorComponent && sensorComponent.status !== "operational") {
+                baseHitChance -= 15; // Damaged sensors reduce accuracy
+            }
+            
+            // Cap the hit chance
+            return Math.min(Math.max(baseHitChance, 10), 95);
+        }
+        
+        function calculateDamage(attacker, weaponType, attackerType) {
+            let baseDamage = 0;
+            
+            // Base damage by weapon type
+            if (weaponType === "Weapons Battery") {
+                baseDamage = getRandomInt(3, 8);
+            } else if (weaponType === "Lance Battery") {
+                baseDamage = getRandomInt(5, 12);
+            } else if (weaponType === "Macro Cannon") {
+                baseDamage = getRandomInt(8, 15);
+            } else if (weaponType === "Torpedo Tubes") {
+                baseDamage = getRandomInt(10, 20);
+            } else if (weaponType === "Mega Laser") {
+                baseDamage = getRandomInt(12, 18);
+            } else if (weaponType === "Bombardment Cannon") {
+                baseDamage = getRandomInt(6, 14);
+            }
+            
+            // Get the correct crew array based on attacker type
+            const crewArray = attackerType === 'player' ? gameData.player.crew : gameData.enemy.crew;
+            
+            // Adjust based on gunner's skill if present
+            if (crewArray) {
+                const gunner = crewArray.find(c => c.role === "Master Gunner");
+                if (gunner) {
+                    baseDamage += Math.floor(gunner.skill / 10);
+                }
+            }
+            
+            // Return the calculated damage
+            return baseDamage;
+        }
+        
+        function applyDamage(ship, damage) {
+            // Apply damage reduction from armor (each point of armor reduces damage by 1)
+            const reducedDamage = Math.max(1, damage - ship.hull.armor / 2);
+            
+            // Apply damage to hull
+            ship.hull.current = Math.max(0, ship.hull.current - reducedDamage);
+            
+            // Check for component damage
+            if (getRandomInt(1, 100) <= 30) {
+                // 30% chance of component damage on hit
+                const operationalComponents = ship.components.filter(c => c.status === "operational");
+                
+                if (operationalComponents.length > 0) {
+                    const randomComponent = getRandomElement(operationalComponents);
+                    randomComponent.status = "damaged";
+                    
+                    return {
+                        damage: reducedDamage,
+                        componentDamage: randomComponent.name
+                    };
+                }
+            }
+            
+            return {
+                damage: reducedDamage,
+                componentDamage: null
+            };
+        }
+        
+        function checkCriticalHit(ship) {
+            // Check for critical hit based on hull percentage
+            const hullPercentage = (ship.hull.current / ship.hull.integrity) * 100;
+            
+            if (hullPercentage <= 0) {
+                return {
+                    type: "hull",
+                    severity: 3,
+                    message: gameData.criticalHits.hull[3]
+                };
+            } else if (hullPercentage <= 25) {
+                // Higher chance of critical at low hull
+                if (getRandomInt(1, 100) <= 40) {
+                    const critTypes = ["hull", "propulsion", "weapons", "bridge", "voidShields"];
+                    const critType = getRandomElement(critTypes);
+                    const severity = getRandomInt(1, 3);
+                    
+                    return {
+                        type: critType,
+                        severity: severity,
+                        message: gameData.criticalHits[critType][severity]
+                    };
+                }
+            } else if (hullPercentage <= 50) {
+                // Medium chance of critical at moderate hull
+                if (getRandomInt(1, 100) <= 20) {
+                    const critTypes = ["hull", "propulsion", "weapons", "bridge", "voidShields"];
+                    const critType = getRandomElement(critTypes);
+                    const severity = getRandomInt(0, 2);
+                    
+                    return {
+                        type: critType,
+                        severity: severity,
+                        message: gameData.criticalHits[critType][severity]
+                    };
+                }
+            } else if (hullPercentage <= 75) {
+                // Low chance of critical at high hull
+                if (getRandomInt(1, 100) <= 10) {
+                    const critTypes = ["hull", "propulsion", "weapons", "bridge", "voidShields"];
+                    const critType = getRandomElement(critTypes);
+                    const severity = getRandomInt(0, 1);
+                    
+                    return {
+                        type: critType,
+                        severity: severity,
+                        message: gameData.criticalHits[critType][severity]
+                    };
+                }
+            }
+            
+            return null;
+        }
+        
+        function applyCriticalEffect(ship, critical) {
+            if (critical) {
+                // Apply effects based on type and severity
+                if (critical.type === "hull") {
+                    // Hull damage reduces crew morale
+                    ship.crew.morale = Math.max(20, ship.crew.morale - 10 * (critical.severity + 1));
+                } else if (critical.type === "propulsion") {
+                    // Propulsion damage reduces speed
+                    ship.speed = Math.max(1, ship.speed - (critical.severity + 1));
+                    // Damage engines component
+                    const enginesComponent = ship.components.find(c => c.name === "Engines");
+                    if (enginesComponent) {
+                        enginesComponent.status = critical.severity >= 2 ? "destroyed" : "damaged";
+                    }
+                } else if (critical.type === "weapons") {
+                    // Weapons damage reduces all weapon effectiveness
+                    const weaponsComponent = ship.components.find(c => c.name === "Weapon Systems");
+                    if (weaponsComponent) {
+                        weaponsComponent.status = critical.severity >= 2 ? "destroyed" : "damaged";
+                    }
+                } else if (critical.type === "bridge") {
+                    // Bridge damage affects command
+                    const bridgeComponent = ship.components.find(c => c.name === "Bridge");
+                    if (bridgeComponent) {
+                        bridgeComponent.status = critical.severity >= 2 ? "destroyed" : "damaged";
+                    }
+                    
+                    // Chance of officer injury or death
+                    if (critical.severity >= 1 && ship.crew) {
+                        const officer = getRandomElement(ship.crew);
+                        if (officer) {
+                            if (critical.severity >= 2) {
+                                officer.health = Math.max(0, officer.health - getRandomInt(30, 50));
+                            } else {
+                                officer.health = Math.max(0, officer.health - getRandomInt(10, 25));
+                            }
+                        }
+                    }
+                } else if (critical.type === "voidShields") {
+                    // Void shield damage makes the ship more vulnerable
+                    const shieldsComponent = ship.components.find(c => c.name === "Void Shields");
+                    if (shieldsComponent) {
+                        shieldsComponent.status = critical.severity >= 2 ? "destroyed" : "damaged";
+                    }
+                }
+            }
+        }
+        
+        // Start Battle Button
+        document.getElementById('start-battle-btn').addEventListener('click', () => {
+            if (!gameData.player.ship || !gameData.enemy.ship) {
+                showNotification('Both player and enemy ships must be selected');
+                return;
+            }
+            
+            // Initialize battle state
+            gameData.battle.turn = 1;
+            gameData.battle.phase = 'active';
+            gameData.battle.log = [];
+            
+            // Reset hull values to max
+            gameData.player.ship.hull.current = gameData.player.ship.hull.integrity;
+            gameData.enemy.ship.hull.current = gameData.enemy.ship.hull.integrity;
+            
+            // Reset all components to operational
+            gameData.player.ship.components.forEach(component => {
+                component.status = "operational";
+            });
+            gameData.enemy.ship.components.forEach(component => {
+                component.status = "operational";
+            });
+            
+            // Reset crew health
+            if (gameData.player.crew) {
+                gameData.player.crew.forEach(crewMember => {
+                    crewMember.health = 100;
+                });
+            }
+            if (gameData.enemy.crew) {
+                gameData.enemy.crew.forEach(crewMember => {
+                    crewMember.health = 100;
+                });
+            }
+            
+            // Update displays
+            updateBattleDisplay();
+            
+            // Clear battle log
+            const battleLog = document.getElementById('battle-log');
+            battleLog.innerHTML = '';
+            
+            // Enable battle controls
+            document.getElementById('next-turn-btn').disabled = false;
+            document.getElementById('auto-battle-btn').disabled = false;
+            document.getElementById('start-battle-btn').disabled = true;
+            
+            // Add initial log entries
+            addLogEntry(`Battle commencing between ${gameData.player.ship.name} and ${gameData.enemy.ship.name}`);
+            addLogEntry(`Turn ${gameData.battle.turn} - Prepare for combat!`);
+            addLogEntry(getRandomElement(gameData.humorQuotes), 'humor');
+        });
+        
+        // Next Turn Button
+        document.getElementById('next-turn-btn').addEventListener('click', () => {
+            if (gameData.battle.phase !== 'active') {
+                showNotification('Start a battle first');
+                return;
+            }
+            
+            // Process turn
+            processTurn();
+        });
+        
+        // Auto Battle Button
+        document.getElementById('auto-battle-btn').addEventListener('click', () => {
+            if (gameData.battle.phase !== 'active') {
+                showNotification('Start a battle first');
+                return;
+            }
+            
+            // Disable buttons during auto-battle
+            document.getElementById('next-turn-btn').disabled = true;
+            document.getElementById('auto-battle-btn').disabled = true;
+            
+            // Run auto-battle
+            const autoBattle = setInterval(() => {
+                processTurn();
+                
+                // Check if battle is over
+                if (gameData.battle.phase !== 'active') {
+                    clearInterval(autoBattle);
+                    document.getElementById('start-battle-btn').disabled = false;
+                }
+            }, 1500);
+        });
+        
+        function processTurn() {
+            addLogEntry(`Turn ${gameData.battle.turn} - Combat Phase Initiated`);
+            
+            // Player and enemy ships fire at each other
+            processShipAttack(gameData.player.ship, gameData.enemy.ship, 'player');
+            processShipAttack(gameData.enemy.ship, gameData.player.ship, 'enemy');
+            
+            // Add humor quote occasionally
+            if (getRandomInt(1, 100) <= 30) {
+                addLogEntry(getRandomElement(gameData.humorQuotes), 'humor');
+            }
+            
+            // Update displays
+            updateBattleDisplay();
+            
+            // Check if battle is over
+            if (gameData.player.ship.hull.current <= 0 || gameData.enemy.ship.hull.current <= 0) {
+                if (gameData.player.ship.hull.current <= 0 && gameData.enemy.ship.hull.current <= 0) {
+                    addLogEntry("Both ships have been destroyed! The battle ends in mutual annihilation!", 'critical');
+                } else if (gameData.player.ship.hull.current <= 0) {
+                    addLogEntry(`The ${gameData.player.ship.name} has been destroyed! The enemy is victorious.`, 'critical');
+                } else {
+                    addLogEntry(`The ${gameData.enemy.ship.name} has been destroyed! You are victorious!`, 'success');
+                }
+                
+                gameData.battle.phase = 'completed';
+                document.getElementById('next-turn-btn').disabled = true;
+                document.getElementById('auto-battle-btn').disabled = true;
+                document.getElementById('start-battle-btn').disabled = false;
+            } else {
+                // Increment turn counter
+                gameData.battle.turn++;
+                addLogEntry(`Turn ${gameData.battle.turn} - Prepare for next exchange`);
+            }
+        }
+        
+        function processShipAttack(attackerShip, defenderShip, attackerType) {
+            // Define attacker and defender names for log
+            const attackerName = attackerType === 'player' ? 'Your ship' : 'Enemy ship';
+            const defenderName = attackerType === 'player' ? 'Enemy ship' : 'Your ship';
+            
+            // Get attacker crew
+            const attackerCrew = attackerType === 'player' ? gameData.player.crew : gameData.enemy.crew;
+            
+            // Check each weapon system
+            const weapons = [
+                { location: 'prow', name: attackerShip.weapons.prow },
+                { location: 'dorsal', name: attackerShip.weapons.dorsal },
+                { location: 'port', name: attackerShip.weapons.port },
+                { location: 'starboard', name: attackerShip.weapons.starboard }
+            ];
+            
+            // Check weapon systems status
+            const weaponSystemsComponent = attackerShip.components.find(c => c.name === "Weapon Systems");
+            if (weaponSystemsComponent && weaponSystemsComponent.status === "destroyed") {
+                addLogEntry(`${attackerName} weapon systems completely offline. Unable to fire.`, 'system');
+                return;
+            }
+            
+            let weaponsDisabled = weaponSystemsComponent && weaponSystemsComponent.status === "damaged";
+            
+            // Process each weapon
+            weapons.forEach(weapon => {
+                if (!weapon.name) return; // Skip empty weapon slots
+                
+                // If weapons are damaged, 50% chance each weapon doesn't fire
+                if (weaponsDisabled && getRandomInt(1, 100) <= 50) {
+                    addLogEntry(`${attackerName} ${weapon.location} ${weapon.name} malfunctions and fails to fire!`, 'system');
+                    return;
+                }
+                
+                // Calculate hit chance
+                const hitChance = calculateHitChance(attackerShip, defenderShip, weapon.name);
+                const rollToHit = getRandomInt(1, 100);
+                
+                if (rollToHit <= hitChance) {
+                    // Weapon hit!
+                    const damage = calculateDamage(attackerShip, weapon.name, attackerType);
+                    const damageResult = applyDamage(defenderShip, damage);
+                    
+                    addLogEntry(`${attackerName} ${weapon.location} ${weapon.name} hits! Deals ${damageResult.damage} damage to ${defenderName}.`, 'action');
+                    
+                    // Component damage
+                    if (damageResult.componentDamage) {
+                        addLogEntry(`${defenderName} ${damageResult.componentDamage} has been damaged!`, 'damage');
+                    }
+                    
+                    // Check for critical hits
+                    const criticalHit = checkCriticalHit(defenderShip);
+                    if (criticalHit) {
+                        addLogEntry(`CRITICAL HIT on ${defenderName}! ${criticalHit.message}`, 'critical');
+                        applyCriticalEffect(defenderShip, criticalHit);
+                    }
+                } else {
+                    // Miss
+                    addLogEntry(`${attackerName} ${weapon.location} ${weapon.name} fires but misses.`, 'system');
+                }
+            });
+        }
+        
+        // Initialize the simulator
+        updateCrewDisplay();
+        updateBattleDisplay();
+    </script>
 </body>
 </html>
