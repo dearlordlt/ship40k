@@ -156,7 +156,12 @@ class BattleController {
         // Display all new log entries since fromIndex
         for (let i = fromIndex; i < this.battle.log.length; i++) {
             const entry = this.battle.log[i];
-            addLogEntry(entry.message, entry.type);
+            addLogEntry(
+                entry.message,
+                entry.type,
+                entry.turn,
+                entry.isRP
+            );
         }
     }
 

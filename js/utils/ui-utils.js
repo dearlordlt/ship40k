@@ -59,18 +59,43 @@ export function clearElement(element) {
  * Add a battle log entry
  * @param {string} message - Log message
  * @param {string} type - Log entry type
+ * @param {number} turn - Battle turn number
+ * @param {boolean} isRP - Whether this is an RP log entry
  */
-export function addLogEntry(message, type = 'system') {
-    const battleLog = document.getElementById('battle-log');
-    if (!battleLog) return;
+export function addLogEntry(message, type = 'system', turn = 0, isRP = false) {
+    const logElement = document.getElementById(isRP ? 'rp-log' : 'battle-log');
+    if (!logElement) return;
 
+    const now = new Date();
+    const timestamp = [
+        now.getHours().toString().padStart(2, '0'),
+        now.getMinutes().toString().padStart(2, '0'),
+        now.getSeconds().toString().padStart(2, '0')
+    ].join('-');
+
+    // Format multi-line messages properly
+    const formattedMessage = message.split('\n').join('<br>');
+    
     const logEntry = createElement('div', {
-        classes: ['log-entry', type],
-        text: message
+        classes: ['log-entry', isRP ? 'rp' : type],
+        html: `<span>${formattedMessage}</span>`,
+        attributes: {
+            'data-time': timestamp,
+            'data-turn': turn ? `Turn ${turn}` : ''
+        }
     });
     
-    battleLog.appendChild(logEntry);
-    battleLog.scrollTop = battleLog.scrollHeight;
+    logElement.appendChild(logEntry);
+    logElement.scrollTop = logElement.scrollHeight;
+}
+
+/**
+ * Add an RP log entry
+ * @param {string} message - RP message
+ * @param {number} turn - Battle turn number
+ */
+export function addRPLogEntry(message, turn = 0) {
+    addLogEntry(message, 'rp', turn, true);
 }
 
 /**

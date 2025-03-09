@@ -1,4 +1,5 @@
 import { getRandomInt, getRandomElement } from '../utils/game-utils.js';
+import { generateContextualRPMessage } from '../utils/rp-utils.js';
 
 class Battle {
     constructor(playerShip, enemyShip) {
@@ -7,6 +8,13 @@ class Battle {
         this.turn = 1;
         this.phase = 'inactive';
         this.log = [];
+        this.turnEvents = {
+            hits: 0,
+            hullDamage: false,
+            componentDamage: null,
+            casualties: false,
+            morale: 100
+        };
         this.criticalHits = {
             hull: [
                 "Minor hull breach! Crew rushing to seal affected areas.",
@@ -46,14 +54,16 @@ class Battle {
         this.log = [];
         this.addLogEntry(`Battle commencing between ${this.playerShip.name} and ${this.enemyShip.name}`);
         this.addLogEntry(`Turn ${this.turn} - Prepare for combat!`);
+        this.addLogEntry(generateContextualRPMessage({}), 'rp', true);
     }
 
-    addLogEntry(message, type = 'system') {
+    addLogEntry(message, type = 'system', isRP = false) {
         const logEntry = {
             message,
-            type,
+            type: isRP ? 'rp' : type,
             turn: this.turn,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            isRP
         };
         this.log.push(logEntry);
         return logEntry;
@@ -64,11 +74,23 @@ class Battle {
             throw new Error('Battle must be active to process turn');
         }
 
+        // Reset turn events
+        this.turnEvents = {
+            hits: 0,
+            hullDamage: false,
+            componentDamage: null,
+            casualties: false,
+            morale: this.playerShip._crewStats.morale
+        };
+
         this.addLogEntry(`Turn ${this.turn} - Combat Phase Initiated`);
 
         // Process ship attacks
         this.processShipAttack(this.playerShip, this.enemyShip, 'player');
         this.processShipAttack(this.enemyShip, this.playerShip, 'enemy');
+
+        // Generate single RP message based on most significant event
+        this.addLogEntry(this.generateTurnRPMessage(), 'rp', true);
 
         // Check battle status
         if (!this.playerShip.isOperational() || !this.enemyShip.isOperational()) {
@@ -89,6 +111,10 @@ class Battle {
         // Check weapon systems status
         if (!attackerShip.isComponentOperational("Weapon Systems")) {
             this.addLogEntry(`${attackerName} weapon systems completely offline. Unable to fire.`, 'system');
+            this.addLogEntry(generateContextualRPMessage({ 
+                damageType: 'component',
+                componentType: 'Weapon Systems'
+            }), 'rp', true);
             return;
         }
 
@@ -103,11 +129,18 @@ class Battle {
                 const damage = this.calculateWeaponDamage(weapon.type, attackerType);
                 const damageResult = defenderShip.takeDamage(damage);
 
+                // Combat log entry
                 this.addLogEntry(
                     `${attackerName} ${weapon.location} ${weapon.type} hits! ` +
                     `Deals ${damageResult} damage to ${defenderName}.`,
                     'action'
                 );
+
+                // Record events
+                this.turnEvents.hits++;
+                if (damageResult > 5) {
+                    this.turnEvents.hullDamage = true;
+                }
 
                 // Check for component damage
                 this.processComponentDamage(defenderShip, defenderName);
@@ -169,6 +202,7 @@ class Battle {
                 const randomComponent = getRandomElement(operationalComponents);
                 ship.damageComponent(randomComponent.name);
                 this.addLogEntry(`${shipName} ${randomComponent.name} has been damaged!`, 'damage');
+                this.turnEvents.componentDamage = randomComponent.name;
             }
         }
     }
@@ -203,6 +237,10 @@ class Battle {
             case "hull":
                 // Reduce crew morale
                 ship._crewStats.morale = Math.max(20, ship._crewStats.morale - 10 * (severity + 1));
+                this.addLogEntry(generateContextualRPMessage({ 
+                    damageType: 'hull',
+                    morale: ship._crewStats.morale 
+                }), 'rp', true);
                 break;
             case "propulsion":
                 ship.speed = Math.max(1, ship.speed - (severity + 1));
@@ -211,6 +249,10 @@ class Battle {
                 } else {
                     ship.damageComponent("Engines");
                 }
+                this.addLogEntry(generateContextualRPMessage({
+                    damageType: 'component',
+                    componentType: 'Engines'
+                }), 'rp', true);
                 break;
             case "weapons":
                 if (severity >= 2) {
@@ -218,6 +260,10 @@ class Battle {
                 } else {
                     ship.damageComponent("Weapon Systems");
                 }
+                this.addLogEntry(generateContextualRPMessage({
+                    damageType: 'component',
+                    componentType: 'Weapon Systems'
+                }), 'rp', true);
                 break;
             case "bridge":
                 if (severity >= 2) {
@@ -237,6 +283,7 @@ class Battle {
                             'critical'
                         );
                     });
+                    this.turnEvents.casualties = true;
                 }
                 break;
             case "voidShields":
@@ -245,6 +292,10 @@ class Battle {
                 } else {
                     ship.damageComponent("Void Shields");
                 }
+                this.addLogEntry(generateContextualRPMessage({
+                    damageType: 'component',
+                    componentType: 'Void Shields'
+                }), 'rp', true);
                 break;
         }
     }
@@ -281,6 +332,35 @@ class Battle {
                 components: this.enemyShip.components
             }
         };
+    }
+
+    generateTurnRPMessage() {
+        // Prioritize events by significance
+        if (this.turnEvents.casualties) {
+            return generateContextualRPMessage({ casualties: true });
+        }
+        
+        if (this.turnEvents.componentDamage) {
+            return generateContextualRPMessage({
+                damageType: 'component',
+                componentType: this.turnEvents.componentDamage
+            });
+        }
+        
+        if (this.turnEvents.hullDamage) {
+            return generateContextualRPMessage({ damageType: 'hull' });
+        }
+        
+        if (this.turnEvents.hits > 0) {
+            return generateContextualRPMessage({ hitSuccess: true });
+        }
+        
+        if (this.turnEvents.morale < 50) {
+            return generateContextualRPMessage({ morale: this.turnEvents.morale });
+        }
+        
+        // Default battle progress message
+        return generateContextualRPMessage({});
     }
 
     toJSON() {
