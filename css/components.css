@@ -1,0 +1,144 @@
+.tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+}
+
+.tab {
+    padding: 0.5rem 1rem;
+    background-color: var(--button);
+    cursor: pointer;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    margin-right: 2px;
+}
+
+.tab:hover {
+    background-color: var(--button-hover);
+}
+
+.tab.active {
+    background-color: var(--accent);
+    color: white;
+}
+
+.tab-content {
+    display: none;
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 0 5px 5px 5px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.ship-selection {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.ship-card {
+    background-color: rgba(30, 30, 30, 0.9);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1rem;
+    width: calc(50% - 0.5rem);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ship-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border-color: var(--highlight);
+}
+
+.ship-card.selected {
+    border: 2px solid var(--highlight);
+    background-color: rgba(40, 40, 40, 0.9);
+}
+
+.ship-card h3 {
+    margin-top: 0;
+    color: var(--highlight);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+
+.ship-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.ship-stat {
+    display: flex;
+    justify-content: space-between;
+}
+
+.ship-stat-label {
+    font-weight: bold;
+    color: #ccc;
+}
+
+.stat-block {
+    background-color: rgba(20, 20, 20, 0.7);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.crew-list {
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: rgba(20, 20, 20, 0.7);
+    padding: 0.5rem;
+    border-radius: 5px;
+}
+
+.crew-member {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background-color: rgba(40, 40, 40, 0.8);
+    border-radius: 3px;
+    border-left: 3px solid var(--accent);
+}
+
+.crew-member h4 {
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.crew-stats {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.crew-stat {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+}
+
+.component {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background-color: rgba(40, 40, 40, 0.8);
+    border-radius: 3px;
+}
+
+.component.damaged {
+    background-color: rgba(80, 30, 30, 0.8);
+}
+
+.component.destroyed {
+    background-color: rgba(50, 10, 10, 0.8);
+    text-decoration: line-through;
+    opacity: 0.7;
+}
