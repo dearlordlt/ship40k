@@ -108,13 +108,10 @@ class Battle {
         const attackerName = attackerType === 'player' ? 'Your ship' : 'Enemy ship';
         const defenderName = attackerType === 'player' ? 'Enemy ship' : 'Your ship';
 
-        // Check weapon systems status
+                // Check weapon systems status
         if (!attackerShip.isComponentOperational("Weapon Systems")) {
             this.addLogEntry(`${attackerName} weapon systems completely offline. Unable to fire.`, 'system');
-            this.addLogEntry(generateContextualRPMessage({ 
-                damageType: 'component',
-                componentType: 'Weapon Systems'
-            }), 'rp', true);
+            this.turnEvents.componentDamage = 'Weapon Systems';
             return;
         }
 
@@ -237,10 +234,8 @@ class Battle {
             case "hull":
                 // Reduce crew morale
                 ship._crewStats.morale = Math.max(20, ship._crewStats.morale - 10 * (severity + 1));
-                this.addLogEntry(generateContextualRPMessage({ 
-                    damageType: 'hull',
-                    morale: ship._crewStats.morale 
-                }), 'rp', true);
+                this.turnEvents.morale = ship._crewStats.morale;
+                this.turnEvents.hullDamage = true;
                 break;
             case "propulsion":
                 ship.speed = Math.max(1, ship.speed - (severity + 1));
@@ -249,10 +244,7 @@ class Battle {
                 } else {
                     ship.damageComponent("Engines");
                 }
-                this.addLogEntry(generateContextualRPMessage({
-                    damageType: 'component',
-                    componentType: 'Engines'
-                }), 'rp', true);
+                this.turnEvents.componentDamage = "Engines";
                 break;
             case "weapons":
                 if (severity >= 2) {
@@ -260,10 +252,7 @@ class Battle {
                 } else {
                     ship.damageComponent("Weapon Systems");
                 }
-                this.addLogEntry(generateContextualRPMessage({
-                    damageType: 'component',
-                    componentType: 'Weapon Systems'
-                }), 'rp', true);
+                this.turnEvents.componentDamage = "Weapon Systems";
                 break;
             case "bridge":
                 if (severity >= 2) {
@@ -285,6 +274,7 @@ class Battle {
                     });
                     this.turnEvents.casualties = true;
                 }
+                this.turnEvents.componentDamage = "Bridge";
                 break;
             case "voidShields":
                 if (severity >= 2) {
@@ -292,10 +282,7 @@ class Battle {
                 } else {
                     ship.damageComponent("Void Shields");
                 }
-                this.addLogEntry(generateContextualRPMessage({
-                    damageType: 'component',
-                    componentType: 'Void Shields'
-                }), 'rp', true);
+                this.turnEvents.componentDamage = "Void Shields";
                 break;
         }
     }
