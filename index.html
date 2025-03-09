@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warhammer 40k Ship Designer</title>
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'imperial-red': '#A91F1F',
+                        'gothic-gold': '#BFA979',
+                        'void-black': '#0F0F0F',
+                    },
+                    fontFamily: {
+                        'gothic': ['Cinzel', 'serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts - Cinzel for Gothic Style -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/custom.css">
+</head>
+<body class="bg-void-black text-gray-200 min-h-screen">
+    <header class="bg-black p-4 border-b-2 border-imperial-red">
+        <h1 class="text-4xl font-gothic text-imperial-red text-center">
+            Warhammer 40k Ship Designer
+        </h1>
+        <p class="text-gothic-gold text-center mt-2 font-gothic">
+            For the Emperor's Glory
+        </p>
+    </header>
+
+    <main class="container mx-auto p-4">
+        <!-- Mode Selection Tabs -->
+        <div class="flex border-b border-imperial-red mb-6">
+            <button id="designModeTab" 
+                    class="px-6 py-3 font-gothic text-imperial-red bg-black hover:bg-gray-900 border-2 border-imperial-red rounded-t-lg active">
+                Design Mode
+            </button>
+            <button id="simulationModeTab" 
+                    class="px-6 py-3 font-gothic text-gray-400 hover:text-imperial-red hover:bg-gray-900 border-2 border-transparent ml-2 rounded-t-lg">
+                Simulation Mode
+            </button>
+        </div>
+
+        <!-- Design Mode Panel -->
+        <div id="designMode" class="mode-panel">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Ship Class Selection -->
+                <div class="bg-gray-900 p-6 rounded-lg border border-imperial-red">
+                    <h2 class="text-2xl font-gothic text-imperial-red mb-4">Ship Class Selection</h2>
+                    <div id="shipClassSelector" class="space-y-4">
+                        <!-- Ship classes will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Resource Tracker -->
+                <div class="bg-gray-900 p-6 rounded-lg border border-imperial-red">
+                    <h2 class="text-2xl font-gothic text-imperial-red mb-4">Resources</h2>
+                    <div id="resourceTracker" class="space-y-4">
+                        <!-- Resource tracking info will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Component Selection -->
+                <div class="bg-gray-900 p-6 rounded-lg border border-imperial-red md:col-span-2">
+                    <h2 class="text-2xl font-gothic text-imperial-red mb-4">Components</h2>
+                    <div id="componentSelector" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Component categories and options will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Finalize Design Section -->
+                <div class="bg-gray-900 p-6 rounded-lg border border-imperial-red md:col-span-2 mt-6">
+                    <h2 class="text-2xl font-gothic text-imperial-red mb-4">Finalize Design</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="shipName" class="block text-gothic-gold mb-2">Ship Name</label>
+                            <input type="text" id="shipName" 
+                                   class="gothic-input w-full"
+                                   placeholder="Enter ship name or leave blank for auto-generation">
+                        </div>
+                        <button id="finalizeDesignBtn"
+                                class="w-full py-3 px-6 bg-imperial-red hover:bg-red-700 font-gothic text-white rounded-lg text-lg transition-colors">
+                            Finalize Design and Begin Simulation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simulation Mode Panel (Hidden by default) -->
+        <div id="simulationModePanel" class="mode-panel hidden">
+            <!-- Simulation content will be added here -->
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
